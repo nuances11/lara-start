@@ -35,7 +35,7 @@
                                             <i class="fas fa-edit text-success"></i>
                                         </a>
                                         |
-                                        <a href="#">
+                                        <a href="#" @click="deleteUser(user.id)">
                                             <i class="fas fa-trash-alt text-danger"></i>
                                         </a>
                                     </td>
@@ -132,20 +132,58 @@
             },
             createUser(){
                 this.$Progress.start();
-                this.form.post('api/user');
+                this.form.post('api/user')
+                .then(() => {
+                    Fire.$emit('AfterCreate');
+                    $('#addNewUser').modal('hide');
 
-                $('#addNewUser').modal('hide');
-
-                Toast.fire({
-                    type: 'success',
-                    title: 'User created successfully'
+                    Toast.fire({
+                        type: 'success',
+                        title: 'User created successfully'
+                    })
+                    this.$Progress.finish()
                 })
-                this.$Progress.finish()
+                .catch(() => {
+
+                })
+                
+            },
+            deleteUser(id){
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    type: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+
+                        if (result.value) {
+                            // Send request to 
+                            this.form.delete('api/user/' + id)
+                            .then(() => {
+                                Swal.fire(
+                                'Deleted!',
+                                'User has been deleted.',
+                                'success'
+                                )
+                                Fire.$emit('AfterCreate');
+                            })
+                            .catch(() => {
+                                swal('Failed!', 'There was something wrong.', 'warning');
+                            });
+                        }
+                        
+                    })
             }
         },
         created() {
             this.loadUsers();
-            setInterval(() => this.loadUsers(), 3000);
+            Fire.$on('AfterCreate',() => {
+                this.loadUsers();
+            });
+            // setInterval(() => this.loadUsers(), 3000);
         }
     }
 

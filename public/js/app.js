@@ -1972,23 +1972,51 @@ __webpack_require__.r(__webpack_exports__);
       });
     },
     createUser: function createUser() {
+      var _this2 = this;
+
       this.$Progress.start();
-      this.form.post('api/user');
-      $('#addNewUser').modal('hide');
-      Toast.fire({
-        type: 'success',
-        title: 'User created successfully'
+      this.form.post('api/user').then(function () {
+        Fire.$emit('AfterCreate');
+        $('#addNewUser').modal('hide');
+        Toast.fire({
+          type: 'success',
+          title: 'User created successfully'
+        });
+
+        _this2.$Progress.finish();
+      })["catch"](function () {});
+    },
+    deleteUser: function deleteUser(id) {
+      var _this3 = this;
+
+      Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        type: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Yes, delete it!'
+      }).then(function (result) {
+        if (result.value) {
+          // Send request to 
+          _this3.form["delete"]('api/user/' + id).then(function () {
+            Swal.fire('Deleted!', 'User has been deleted.', 'success');
+            Fire.$emit('AfterCreate');
+          })["catch"](function () {
+            swal('Failed!', 'There was something wrong.', 'warning');
+          });
+        }
       });
-      this.$Progress.finish();
     }
   },
   created: function created() {
-    var _this2 = this;
+    var _this4 = this;
 
     this.loadUsers();
-    setInterval(function () {
-      return _this2.loadUsers();
-    }, 3000);
+    Fire.$on('AfterCreate', function () {
+      _this4.loadUsers();
+    }); // setInterval(() => this.loadUsers(), 3000);
   }
 });
 
@@ -58857,7 +58885,28 @@ var render = function() {
                         _vm._v(_vm._s(_vm._f("readableDate")(user.created_at)))
                       ]),
                       _vm._v(" "),
-                      _vm._m(2, true)
+                      _c("td", [
+                        _vm._m(2, true),
+                        _vm._v(
+                          "\n                                    |\n                                    "
+                        ),
+                        _c(
+                          "a",
+                          {
+                            attrs: { href: "#" },
+                            on: {
+                              click: function($event) {
+                                return _vm.deleteUser(user.id)
+                              }
+                            }
+                          },
+                          [
+                            _c("i", {
+                              staticClass: "fas fa-trash-alt text-danger"
+                            })
+                          ]
+                        )
+                      ])
                     ])
                   })
                 ],
@@ -59208,16 +59257,8 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("td", [
-      _c("a", { attrs: { href: "#" } }, [
-        _c("i", { staticClass: "fas fa-edit text-success" })
-      ]),
-      _vm._v(
-        "\n                                    |\n                                    "
-      ),
-      _c("a", { attrs: { href: "#" } }, [
-        _c("i", { staticClass: "fas fa-trash-alt text-danger" })
-      ])
+    return _c("a", { attrs: { href: "#" } }, [
+      _c("i", { staticClass: "fas fa-edit text-success" })
     ])
   },
   function() {
@@ -74176,6 +74217,7 @@ Vue.filter('upText', function (text) {
 Vue.filter('readableDate', function (date) {
   return moment__WEBPACK_IMPORTED_MODULE_0___default()(date).format('MMMM Do YYYY');
 });
+window.Fire = new Vue();
 /**
  * The following block of code may be used to automatically register your
  * Vue components. It will recursively scan this directory for the Vue
