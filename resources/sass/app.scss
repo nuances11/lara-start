@@ -20,3 +20,12 @@ $fa-font-path: "../webfonts";
 a.router-link-exact-active{
     color: #ffffff !important;
 }
+
+/* Important part */
+.modal-dialog{
+    overflow-y: initial !important
+}
+.modal-body{
+    height: 300px;
+    overflow-y: auto;
+}

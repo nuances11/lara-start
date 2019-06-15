@@ -1,13 +1,13 @@
 <template>
     <div class="container">
-        <div class="row mt-3">
+        <div class="row mt-3" v-show="$gate.isAdminOrAuthor()">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">Users Table</h3>
 
                         <div class="card-tools">
-                            <button class="btn btn-success" data-toggle="modal" data-target="#addNewUser"><i
+                            <button class="btn btn-success" @click="newModal"><i
                                     class="fas fa-user-plus"></i> Add New User</button>
                         </div>
                     </div>
@@ -31,7 +31,7 @@
                                     <td>{{ user.type | upText }}</td>
                                     <td>{{ user.created_at | readableDate }}</td> 
                                     <td>
-                                        <a href="#">
+                                        <a href="#" @click="editModal(user)">
                                             <i class="fas fa-edit text-success"></i>
                                         </a>
                                         |
@@ -50,18 +50,23 @@
             </div>
         </div>
 
+        <div v-show="!$gate.isAdminOrAuthor()">
+            <page-not-found></page-not-found>
+        </div>
+
         <!-- Modal -->
         <div class="modal fade" id="addNewUser" tabindex="-1" role="dialog" aria-labelledby="addNewUserLabel"
             aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="addNewUserLabel">Add New</h5>
+                        <h5 v-show="!editmode" class="modal-title" id="addNewUserLabel">Add New</h5>
+                        <h5 v-show="editmode" class="modal-title" id="addNewUserLabel">Edit User</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
-                    <form @submit.prevent="createUser">
+                    <form @submit.prevent="editmode ? updateUser() : createUser()">
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="name">Name</label>
@@ -102,7 +107,8 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Create</button>
+                        <button v-show="editmode" type="submit" class="btn btn-warning">Update</button>
+                        <button v-show="!editmode" type="submit" class="btn btn-primary">Create</button>
                     </div>
                     </form>
                 </div>
@@ -115,8 +121,10 @@
     export default {
         data() {
             return {
+                editmode : false,
                 users : {}, 
                 form: new Form({
+                    id: '',
                     name: '',
                     email: '',
                     password: '',
@@ -127,8 +135,41 @@
             }
         },
         methods: {
+            updateUser(id){
+                this.$Progress.start();
+                this.form.put('api/user/' + this.form.id)
+                .then(() => {
+                    Fire.$emit('AfterCreate');
+                    $('#addNewUser').modal('hide');
+                    Toast.fire({
+                        type: 'success',
+                        title: 'User updated successfully'
+                    })
+                    this.$Progress.finish()
+                })
+                .catch(() => {
+                    Toast.fire({
+                        type: 'danger',
+                        title: 'Update user failed'
+                    })
+                    this.$Progress.fail();
+                });
+            },
+            editModal(user){
+                this.editmode = true;
+                this.form.reset();
+                $('#addNewUser').modal('show');
+                this.form.fill(user);
+            },
+            newModal(){
+                this.editmode = false;
+                this.form.reset();
+                $('#addNewUser').modal('show');
+            },
             loadUsers(){
-                axios.get('api/user').then( ( { data } ) => (this.users = data.data));
+                if (this.$gate.isAdminOrAuthor()) {
+                    axios.get('api/user').then( ( { data } ) => (this.users = data.data));
+                }
             },
             createUser(){
                 this.$Progress.start();

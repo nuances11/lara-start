@@ -12,6 +12,9 @@ import { Form, HasError, AlertError } from 'vform'
 import VueProgressBar from 'vue-progressbar'
 import VueRouter from 'vue-router'
 import Swal from 'sweetalert2'
+import Gate from './Gate';
+
+Vue.prototype.$gate = new Gate(window.user);
 
 window.Swal = Swal;
 window.Form = Form;
@@ -67,6 +70,26 @@ window.Fire = new Vue();
 
 // const files = require.context('./', true, /\.vue$/i);
 // files.keys().map(key => Vue.component(key.split('/').pop().split('.')[0], files(key).default));
+
+Vue.component(
+    'passport-clients',
+    require('./components/passport/Clients.vue').default
+);
+
+Vue.component(
+    'passport-authorized-clients',
+    require('./components/passport/AuthorizedClients.vue').default
+);
+
+Vue.component(
+    'passport-personal-access-tokens',
+    require('./components/passport/PersonalAccessTokens.vue').default
+);
+
+Vue.component(
+    'page-not-found',
+    require('./components/404.vue').default
+);
 
 Vue.component('example-component', require('./components/ExampleComponent.vue').default);
 
