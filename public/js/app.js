@@ -2208,10 +2208,6 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
-//
-//
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   data: function data() {
     return {
@@ -2229,10 +2225,6 @@ __webpack_require__.r(__webpack_exports__);
     };
   },
   methods: {
-    usersEmpty: function usersEmpty() {
-      var is_empty = Object.keys(this.users).length === 0 ? true : false;
-      console.log(is_empty); // return (Object.keys(this.users).length === 0) ? true : false;
-    },
     // Our method to GET results from a Laravel endpoint
     getResults: function getResults() {
       var _this = this;
@@ -2329,14 +2321,23 @@ __webpack_require__.r(__webpack_exports__);
 
     Fire.$on('searching', function () {
       var query = _this6.$parent.search;
+
+      _this6.$Progress.start();
+
       axios.get('api/findUser?q=' + query).then(function (data) {
         _this6.users = data.data;
 
-        _this6.usersEmpty();
-      })["catch"](function () {});
+        _this6.$Progress.finish();
+      })["catch"](function () {
+        Toast.fire({
+          type: 'danger',
+          title: 'Search Failed'
+        });
+
+        _this6.$Progress.fail();
+      });
     });
     this.loadUsers();
-    this.usersEmpty();
     Fire.$on('AfterCreate', function () {
       _this6.loadUsers();
     }); // setInterval(() => this.loadUsers(), 3000);
@@ -63136,31 +63137,7 @@ var render = function() {
                           )
                         ])
                       ])
-                    }),
-                    _vm._v(" "),
-                    _c(
-                      "tr",
-                      {
-                        directives: [
-                          {
-                            name: "show",
-                            rawName: "v-show",
-                            value: _vm.usersEmpty,
-                            expression: "usersEmpty"
-                          }
-                        ]
-                      },
-                      [
-                        _c(
-                          "td",
-                          {
-                            staticClass: "text-center",
-                            attrs: { colspan: "6" }
-                          },
-                          [_vm._v("No result found!")]
-                        )
-                      ]
-                    )
+                    })
                   ],
                   2
                 )

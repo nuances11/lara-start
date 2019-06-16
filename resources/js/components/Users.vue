@@ -41,10 +41,6 @@
                                     </td>
                                 </tr>
 
-                                <tr v-show="usersEmpty">
-                                   <td colspan="6" class="text-center">No result found!</td> 
-                                </tr>
-
                             </tbody>
                         </table>
                     </div>
@@ -142,11 +138,6 @@
             }
         },
         methods: {
-            usersEmpty(){
-                let is_empty = (Object.keys(this.users).length === 0) ? true : false;
-                console.log(is_empty);
-                // return (Object.keys(this.users).length === 0) ? true : false;
-            },
             // Our method to GET results from a Laravel endpoint
             getResults(page = 1) {
                 axios.get('api/user?page=' + page)
@@ -241,17 +232,21 @@
         created() {
             Fire.$on('searching', () => {
                 let query = this.$parent.search;
+                this.$Progress.start();
                 axios.get('api/findUser?q=' + query)
                 .then((data) => {
                     this.users = data.data
-                    this.usersEmpty();
+                    this.$Progress.finish()
                 })
                 .catch(() => {
-
+                    Toast.fire({
+                        type: 'danger',
+                        title: 'Search Failed'
+                    })
+                    this.$Progress.fail();
                 })
             })
             this.loadUsers();
-            this.usersEmpty();
             Fire.$on('AfterCreate',() => {
                 this.loadUsers();
                 
