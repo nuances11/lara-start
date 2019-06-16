@@ -24,7 +24,7 @@
                                     <th>Modify</th>
                                 </tr>
 
-                                <tr v-for="user in users" :key="user.id">
+                                <tr v-for="user in users.data" :key="user.id">
                                     <td>{{ user.id }}</td>
                                     <td>{{ user.name }}</td>
                                     <td>{{ user.email }}</td>
@@ -41,10 +41,17 @@
                                     </td>
                                 </tr>
 
+                                <tr v-show="usersEmpty">
+                                   <td colspan="6" class="text-center">No result found!</td> 
+                                </tr>
+
                             </tbody>
                         </table>
                     </div>
                     <!-- /.card-body -->
+                    <div class="card-footer">
+                        <pagination :data="users" @pagination-change-page="getResults"></pagination>
+                    </div>
                 </div>
                 <!-- /.card -->
             </div>
@@ -135,6 +142,18 @@
             }
         },
         methods: {
+            usersEmpty(){
+                let is_empty = (Object.keys(this.users).length === 0) ? true : false;
+                console.log(is_empty);
+                // return (Object.keys(this.users).length === 0) ? true : false;
+            },
+            // Our method to GET results from a Laravel endpoint
+            getResults(page = 1) {
+                axios.get('api/user?page=' + page)
+                    .then(response => {
+                        this.users = response.data;
+                    });
+            },
             updateUser(id){
                 this.$Progress.start();
                 this.form.put('api/user/' + this.form.id)
@@ -168,7 +187,7 @@
             },
             loadUsers(){
                 if (this.$gate.isAdminOrAuthor()) {
-                    axios.get('api/user').then( ( { data } ) => (this.users = data.data));
+                    axios.get('api/user').then( ( { data } ) => (this.users = data));
                 }
             },
             createUser(){
@@ -220,9 +239,22 @@
             }
         },
         created() {
+            Fire.$on('searching', () => {
+                let query = this.$parent.search;
+                axios.get('api/findUser?q=' + query)
+                .then((data) => {
+                    this.users = data.data
+                    this.usersEmpty();
+                })
+                .catch(() => {
+
+                })
+            })
             this.loadUsers();
+            this.usersEmpty();
             Fire.$on('AfterCreate',() => {
                 this.loadUsers();
+                
             });
             // setInterval(() => this.loadUsers(), 3000);
         }

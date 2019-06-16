@@ -21,6 +21,8 @@ window.Form = Form;
 Vue.component(HasError.name, HasError)
 Vue.component(AlertError.name, AlertError)
 
+Vue.component('pagination', require('laravel-vue-pagination'));
+
 Vue.use(VueRouter)
 Vue.use(VueProgressBar, {
     color: 'rgb(143, 255, 199)',
@@ -31,7 +33,8 @@ Vue.use(VueProgressBar, {
 let routes = [
     { path: '/dashboard', component: require('./components/Dashboard.vue').default },
     { path: '/profile', component: require('./components/Profile.vue').default },
-    { path: '/users', component: require('./components/Users.vue').default }
+    { path: '/users', component: require('./components/Users.vue').default },
+    { path: '*', component: require('./components/404.vue').default }
 ]
 
 const Toast = Swal.mixin({
@@ -101,5 +104,13 @@ Vue.component('example-component', require('./components/ExampleComponent.vue').
 
 const app = new Vue({ 
     el: '#app',
-    router
+    router,
+    data: {
+        search: '',
+    },
+    methods: {
+        searchData(){
+            Fire.$emit('searching');
+        }
+    },
 });
